@@ -3,8 +3,16 @@ case class Lambda(arg: Var, body: Expr) extends Expr
 case class Var(name: String) extends Expr
 case class Apply(fun: Expr, arg: Expr) extends Expr
 
+def free_vars(e: Expr): Set[Var] = 
+  e match
+  {
+    case Var(v) => Set(Var(v))
+    case Apply(e0, e1) => free_vars(e0) ++ free_vars(e1)
+    case Lambda(v,e) => free_vars(e) - v
+  }
+
 //Used for generating an alpha equivalent lambda term with variable p
-def do_lambda_sub(p: Var, l: Lambda) = 
+def do_lambda_sub(p: Var, l: Lambda): Lambda = 
   Lambda(p, do_sub(l.arg,l.body,p))
 
 //Sub e1 for p in expression e0
