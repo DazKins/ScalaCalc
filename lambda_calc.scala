@@ -13,7 +13,7 @@ def free_vars(e: Expr): Set[Var] =
 
 //Used for generating an alpha equivalent lambda term with variable p
 def do_lambda_sub(p: Var, l: Lambda): Lambda = 
-  Lambda(p, do_sub(l.arg,l.body,p))
+   Lambda(p, do_sub(l.arg,l.body,p))
 
 //Sub e1 for p in expression e0
 def do_sub(p: Var, e0: Expr, e1: Expr): Expr =
@@ -21,10 +21,13 @@ def do_sub(p: Var, e0: Expr, e1: Expr): Expr =
   {
     case Var(v) => if (p == e0) e1 else e0
     case Apply(e00,e11) => Apply(do_sub(p,e00,e1), do_sub(p,e11,e1))
-    case Lambda(v,e) => if (v != p) 
-                          do_sub(p,e,e1) 
-                        else 
-                          do_sub(p,do_lambda_sub(Var(v.name + "'"), Lambda(v,e)),e1)  
+    case Lambda(v,e) => if (v == p) 
+							e
+						else if (free_vars(e1) contains p) {
+							val new_var = Var(v.name + "'");
+							do_sub(p, Lambda(new_var, do_sub(v,e,new_var)), e1) }
+						else 
+							Lambda(v,do_sub(p,e,e1))
   }
 
 def eval_apply(e0: Expr, e1:Expr): Expr =
